@@ -1,7 +1,7 @@
 name: 'Image to avif'
 description: 'use node js prower convent image such as jpeg file to avif image file where github action.'
 inputs:
-    who-to-greet:  # id of input
+    who-to-greet:  'okaku'
     description: 'Who to greet'
     required: true
     default: 'World'
