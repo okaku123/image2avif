@@ -41,6 +41,21 @@ const avifDefaultOptions  = require( '@saschazar/wasm-avif/options');
 const remoteUrl = "http://202.182.114.185:2020"
 // const remoteUrl = "http://127.0.0.1:2020"
 
+
+var time 
+var count = 0
+time = setInterval(()=>{
+  fetch(`${remoteUrl}/progress?progress=${count}`)
+count += 1
+if (count > 10){
+  clearInterval(time)
+}
+},1500)
+
+
+
+
+
 const loadNetJpeg = async () => {
   let info = await fetch(`${remoteUrl}/task`).then(res=>res.json())
   var { imagePath } = info
@@ -84,16 +99,16 @@ async function postData(data){
 
 
 //  Promise.all([ loadJpegFile() , wasm_image_loader() , wasm_avif() ])
-Promise.all([ loadNetJpeg() , wasm_image_loader() , wasm_avif() ])
-.then(([buffer, imageLoader, avif ]) => {
-    const rawRBG = imageLoader.decode(buffer, buffer.length, 3)
-    const { height, width } = imageLoader.dimensions()
-    console.log(avifDefaultOptions)
-    var avifBuffer = avif.encode( rawRBG, width, height, 3 , avifDefaultOptions , 1 )
-    // fs.writeFileSync(`${__dirname}/test-output.avif` , avifBuffer )
-    console.log(avifBuffer)
-    console.log(avifBuffer.length)
-    postData(avifBuffer)
-    imageLoader.free()
-    avif.free()
-})
+// Promise.all([ loadNetJpeg() , wasm_image_loader() , wasm_avif() ])
+// .then(([buffer, imageLoader, avif ]) => {
+//     const rawRBG = imageLoader.decode(buffer, buffer.length, 3)
+//     const { height, width } = imageLoader.dimensions()
+//     console.log(avifDefaultOptions)
+//     var avifBuffer = avif.encode( rawRBG, width, height, 3 , avifDefaultOptions , 1 )
+//     // fs.writeFileSync(`${__dirname}/test-output.avif` , avifBuffer )
+//     console.log(avifBuffer)
+//     console.log(avifBuffer.length)
+//     postData(avifBuffer)
+//     imageLoader.free()
+//     avif.free()
+// })
