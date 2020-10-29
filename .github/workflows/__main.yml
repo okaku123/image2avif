@@ -11,7 +11,7 @@ jobs:
       - name: make cover file as release
         uses: xresloader/upload-to-github-release@v1
         with:
-           file: "./output.jpg"
+           file: "index.js"
            tags: false
            draft: false
         env:
