@@ -12,8 +12,8 @@ jobs:
         uses: xresloader/upload-to-github-release@v1
         with:
            file: "output.jpg"
-           tags: true
-           draft: true
+           tags: false
+           draft: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
