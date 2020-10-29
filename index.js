@@ -24,6 +24,7 @@ const wasm_image_loader = require('@saschazar/wasm-image-loader');
 const jpegdefaultOptions = require('@saschazar/wasm-mozjpeg/options'); // fully populated options object crucially needed!
 const avifDefaultOptions  = require( '@saschazar/wasm-avif/options');
 const { resolve } = require('path');
+const { release } = require('os');
 
 
 // const fetchImage = async () => new Uint8Array(await fetch(SAMPLE_URL).then(res => res.buffer()));
@@ -176,7 +177,7 @@ async function  tellServerNoThingToHandle(){
       console.log(resized)
       var { encode } = await wasm_mozjpeg()
       const encoded = encode(resized , _w , _h , 3 , jpegdefaultOptions );
-      fs.writeFileSync(`${__dirname}/cover/output.jpg` , encoded )
+      fs.writeFileSync(`${__dirname}/output.jpg` , encoded )
       free()
     }
 
@@ -188,9 +189,27 @@ async function  tellServerNoThingToHandle(){
     let firstImageData = zip.entryDataSync(imageFiles[0])
     await createCover(firstImageData)
 
-    
-
-
 }
+
+
+
+
+// on: [push]
+
+// jobs:
+//   hello_world_job:
+//     runs-on: ubuntu-latest
+//     name: A job to say hello
+//     steps:
+//     - name: Hello world action step
+//       id: hello
+//       uses: okaku123/image2avif@master
+//       with:
+//         who-to-greet: 'Mona the Octocat'
+//     # Use the output from the `hello` step
+//     - name: Get the output time
+//       run: echo "The time was ${{ steps.hello.outputs.time }}"
+
+
 
 

@@ -1,13 +1,13 @@
-name: 'Hello World'
-description: 'Greet someone and record the time'
+name: 'handle zip file'
+description: 'handle zip file and create cover  image file'
 inputs:
   who-to-greet:  # id of input
-    description: 'Who to greet'
-    required: true
-    default: 'meme4'
+    description: 'tmp input'
+    required: false
+    default: 'okaku'
 outputs:
   time: # id of output
-    description: 'The time we greeted you'
+    description: 'tmp ouput'
 runs:
   using: 'node12'
   main: 'index.js'
