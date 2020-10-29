@@ -11,6 +11,6 @@ jobs:
       - name: make cover file as release
         uses: JasonEtco/upload-to-release@master
         with:
-          args: ./cover/output.jpg image/jpeg
+          args: output.jpg image/jpeg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
