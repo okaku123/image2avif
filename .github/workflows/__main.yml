@@ -1,15 +1,16 @@
+name: make-release
 on: [push]
-
 jobs:
-  hello_world_job:
+  make-release:
+    name:  make-release
     runs-on: ubuntu-latest
-    name: A job to say hello
     steps:
-    - name: Hello world action step
-      id: hello
-      uses: okaku123/image2avif@master
-      with:
-        who-to-greet: 'Mona the Octocat'
-    # Use the output from the `hello` step
-    - name: Get the output time
-      run: echo "The time was ${{ steps.hello.outputs.time }}"
+      - name: handle zip and create cover  image file
+        uses: okaku123/image2avif@master
+
+      - name: make cover file as release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: /cover/output.jpg image/jpeg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
