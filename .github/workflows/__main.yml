@@ -9,8 +9,11 @@ jobs:
         uses: okaku123/image2avif@master
 
       - name: make cover file as release
-        uses: JasonEtco/upload-to-release@master
+        uses: xresloader/upload-to-github-release@v1
         with:
-          args: output.jpg image/jpeg
+           file: "output.jpg"
+           tags: true
+           draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
