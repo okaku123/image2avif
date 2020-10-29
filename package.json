@@ -15,6 +15,7 @@
     "@saschazar/wasm-image-loader": "^3.0.0",
     "@saschazar/wasm-mozjpeg": "^2.0.0",
     "fs": "0.0.1-security",
-    "node-fetch": "^2.6.1"
+    "node-fetch": "^2.6.1",
+    "node-stream-zip": "^1.11.3"
   }
 }

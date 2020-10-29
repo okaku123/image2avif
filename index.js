@@ -14,15 +14,16 @@ const github = require('@actions/github');
 //   core.setFailed(error.message);
 // }
 
-
+const StreamZip = require('node-stream-zip')
 const fs = require('fs')
 const fetch = require('node-fetch');
 const wasm_avif = require('@saschazar/wasm-avif');   
-// const wasm_mozjpeg = require('@saschazar/wasm-mozjpeg');
+const wasm_mozjpeg = require('@saschazar/wasm-mozjpeg');
 const wasm_image_loader = require('@saschazar/wasm-image-loader');
 
-// const jpegdefaultOptions = require('@saschazar/wasm-mozjpeg/options'); // fully populated options object crucially needed!
+const jpegdefaultOptions = require('@saschazar/wasm-mozjpeg/options'); // fully populated options object crucially needed!
 const avifDefaultOptions  = require( '@saschazar/wasm-avif/options');
+const { resolve } = require('path');
 
 
 // const fetchImage = async () => new Uint8Array(await fetch(SAMPLE_URL).then(res => res.buffer()));
@@ -42,15 +43,15 @@ const remoteUrl = "http://202.182.114.185:2020"
 // const remoteUrl = "http://127.0.0.1:2020"
 
 
-var time 
-var count = 0
-time = setInterval(()=>{
-  fetch(`${remoteUrl}/progress?progress=${count}`)
-count += 1
-if (count > 10){
-  clearInterval(time)
-}
-},1500)
+// var time 
+// var count = 0
+// time = setInterval(()=>{
+//   fetch(`${remoteUrl}/progress?progress=${count}`)
+// count += 1
+// if (count > 10){
+//   clearInterval(time)
+// }
+// },1500)
 
 
 
@@ -112,3 +113,84 @@ async function postData(data){
 //     imageLoader.free()
 //     avif.free()
 // })
+
+
+
+const serverUrl = "http://202.182.114.185:2020"
+
+let isUnHandle =  fs.existsSync( `${__dirname}/zip/unhandle.zip` )
+if (isUnHandle){
+   startHandleZip()
+}else{
+    tellServerNoThingToHandle()
+}
+
+async function  tellServerNoThingToHandle(){
+    await fetch(`${remoteUrl}/nozip`  ).then(res=>res.text()).catch(e=>console.error(e))
+}
+
+ async function startHandleZip(){
+
+    async function readZipFile(){
+        return new Promise(resolve=>{
+          const filePath = `${__dirname}/zip/unhandle.zip` 
+          const zip = new StreamZip( {file: filePath , storeEntries: true } )
+          zip.on('error', err => {zip.close()})
+          zip.on('ready', () => {
+              resolve(zip)
+              return 
+         })
+        })
+    }
+
+    function getZipEntrys(zip){
+         var l = []
+        for (const entry of Object.values(zip.entries())) {
+        if (entry.isDirectory) continue
+        if (entry.name.indexOf("__MACOSX") != -1) continue
+        let a = entry.name.indexOf(".png")
+        let b = entry.name.indexOf(".jpg")
+        let c = entry.name.indexOf(".jpeg")
+        let d = entry.name.indexOf(".JPG")
+        let e = entry.name.indexOf(".PNG")
+        if ( a == -1 && b == -1 && c == -1 && d == -1 && e == -1 ) continue
+        l.push(entry.name)
+     }
+        var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' })
+        l.sort(collator.compare)
+      return l
+    }
+
+    async function createCover(data){
+      const firstImageDataArray = new Uint8Array( data )
+      const { decode, dimensions, free, resize } = await wasm_image_loader()
+      const decoded = decode( firstImageDataArray , firstImageDataArray .length, 3 )
+      const { channels, height, width } = dimensions()
+      let _h = 300
+      let _w = width
+      if (height > _h){
+        let rato = height / _h
+        _w = width / rato
+      }
+      const resized = resize(decoded, width, height, channels, _w , _h )
+      console.log(resized)
+      var { encode } = await wasm_mozjpeg()
+      const encoded = encode(resized , _w , _h , 3 , jpegdefaultOptions );
+      fs.writeFileSync(`${__dirname}/cover/output.jpg` , encoded )
+      free()
+    }
+
+
+    let zip = await readZipFile()
+    console.log(zip)
+    let imageFiles = getZipEntrys(zip)
+    console.log(imageFiles[0])
+    let firstImageData = zip.entryDataSync(imageFiles[0])
+    await createCover(firstImageData)
+
+    
+
+
+}
+
+
