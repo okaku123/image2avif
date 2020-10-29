@@ -178,6 +178,7 @@ async function  tellServerNoThingToHandle(){
       var { encode } = await wasm_mozjpeg()
       const encoded = encode(resized , _w , _h , 3 , jpegdefaultOptions );
       fs.writeFileSync(`${__dirname}/output.jpg` , encoded )
+      console.log(encoded)
       free()
     }
 
