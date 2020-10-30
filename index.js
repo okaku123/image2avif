@@ -54,10 +54,6 @@ const remoteUrl = "http://202.182.114.185:2020"
 // }
 // },1500)
 
-
-
-
-
 const loadNetJpeg = async () => {
   let info = await fetch(`${remoteUrl}/task`).then(res=>res.json())
   var { imagePath } = info
@@ -88,16 +84,16 @@ const loadNetJpeg = async () => {
 // }
 
 
-async function postData(data){
-  let option =  {
-    method: 'post',
-    headers: {
-      "Content-length": data.length
-   },
-    body: data
-  }
-  let t =  await fetch(`${remoteUrl}/complete` , option ).then(res=>res.text())
-}
+// async function postData(data){
+//   let option =  {
+//     method: 'post',
+//     headers: {
+//       "Content-length": data.length
+//    },
+//     body: data
+//   }
+//   let t =  await fetch(`${remoteUrl}/complete` , option ).then(res=>res.text())
+// }
 
 
 //  Promise.all([ loadJpegFile() , wasm_image_loader() , wasm_avif() ])
@@ -120,8 +116,10 @@ async function postData(data){
 const serverUrl = "http://202.182.114.185:2020"
 
 let isUnHandle =  fs.existsSync( `${__dirname}/zip/unhandle.zip` )
+let nameBuffer = fs.readFileSync(`${__dirname}/config.txt`)
+let name = nameBuffer.toString()
 if (isUnHandle){
-   startHandleZip()
+   startHandleZip(name)
 }else{
     tellServerNoThingToHandle()
 }
@@ -130,7 +128,7 @@ async function  tellServerNoThingToHandle(){
     await fetch(`${remoteUrl}/nozip`  ).then(res=>res.text()).catch(e=>console.error(e))
 }
 
- async function startHandleZip(){
+ async function startHandleZip(name){
 
     async function readZipFile(){
         return new Promise(resolve=>{
@@ -162,7 +160,7 @@ async function  tellServerNoThingToHandle(){
       return l
     }
 
-    async function createCover(data){
+    async function createCover(name ,data){
       const firstImageDataArray = new Uint8Array( data )
       const { decode, dimensions, free, resize } = await wasm_image_loader()
       const decoded = decode( firstImageDataArray , firstImageDataArray .length, 3 )
@@ -177,20 +175,77 @@ async function  tellServerNoThingToHandle(){
       console.log(resized)
       var { encode } = await wasm_mozjpeg()
       const encoded = encode(resized , _w , _h , 3 , jpegdefaultOptions );
-      fs.writeFileSync(`${__dirname}/output.jpg` , encoded )
+      fs.writeFileSync(`${__dirname}/cover/${name}.jpg` , encoded )
       console.log(encoded)
       free()
     }
 
+    async function handlePage( book ,name,data){
+      const imageDataArray = new Uint8Array( data )
+      const { decode, dimensions, free, resize } = await wasm_image_loader()
+      const decoded = decode( imageDataArray , imageDataArray.length, 3 )
+      const { channels, height, width } = dimensions()
+      let _w = 1080
+      let _h = height
+      if ( width > _w ){
+        let rato = width / _w
+        _h = height / rato
+        console.log('rato' , rato)
+      }else{
+        _w = width
+      }
+      const resized = resize(decoded, width, height, channels, _w , _h )
+      var avif = await wasm_avif()
+      var avifBuffer = avif.encode(  resized , _w , _h , 3 , avifDefaultOptions , 1 )
+       fs.writeFileSync(`${__dirname}/page/${name}.avif` , avifBuffer )
+       await postData( book , name, avifBuffer )
+      console.log(name)
+      free()
+      avif.free()
+    }
+
 
     let zip = await readZipFile()
-    console.log(zip)
     let imageFiles = getZipEntrys(zip)
     console.log(imageFiles[0])
     let firstImageData = zip.entryDataSync(imageFiles[0])
-    await createCover(firstImageData)
+    await createCover( name , firstImageData)
+
+    for ( fileName of imageFiles ){
+          let pageName = fileName    
+      if (fileName.indexOf("/") != -1){
+              let strpart = fileName.split("/")
+              pageName = strpart[strpart.length - 1]
+          }
+          let data = zip.entryDataSync( fileName )
+          await handlePage( name, pageName,data)
+    }
+    zip.close()
+    console.log( `《${name}》 handle finish` )
+}
+
+
+async function postData( book , name , data){
+  let option =  {
+    method: 'post',
+    headers: {
+      "Content-length": data.length,
+      "file" : encodeURIComponent( name ),
+      "folder": encodeURIComponent( book )
+   },
+    body: data
+  }
+  let remoteUrl = "http://202.182.114.185:9090"
+   await fetch(`${remoteUrl}/complete` , option ).then( async res=>{
+     console.log(res.ok)
+        if(!res.ok){
+          await fetch(`${remoteUrl}/complete` , option )
+        }
+   })
+
 
 }
+
 
 
 
