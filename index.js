@@ -235,7 +235,7 @@ async function postData( book , name , data){
    },
     body: data
   }
-  let remoteUrl = "http://202.182.114.185:9090"
+  let remoteUrl = "http://202.182.114.185:2020"
    await fetch(`${remoteUrl}/complete` , option ).then( async res=>{
      console.log(res.ok)
         if(!res.ok){
