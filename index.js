@@ -175,7 +175,7 @@ async function  tellServerNoThingToHandle(){
       console.log(resized)
       var { encode } = await wasm_mozjpeg()
       const encoded = encode(resized , _w , _h , 3 , jpegdefaultOptions );
-      fs.writeFileSync(`${__dirname}/cover/${name}.jpg` , encoded )
+      // fs.writeFileSync(`${__dirname}/cover/${name}.jpg` , encoded )
       console.log(encoded)
       free()
     }
@@ -197,7 +197,7 @@ async function  tellServerNoThingToHandle(){
       const resized = resize(decoded, width, height, channels, _w , _h )
       var avif = await wasm_avif()
       var avifBuffer = avif.encode(  resized , _w , _h , 3 , avifDefaultOptions , 1 )
-       fs.writeFileSync(`${__dirname}/page/${name}.avif` , avifBuffer )
+      //  fs.writeFileSync(`${__dirname}/page/${name}.avif` , avifBuffer )
        await postData( book , name, avifBuffer )
       console.log(name)
       free()
@@ -236,7 +236,7 @@ async function postData( book , name , data){
     body: data
   }
   let remoteUrl = "http://202.182.114.185:2020"
-   await fetch(`${remoteUrl}/complete` , option ).then( async res=>{
+   fetch(`${remoteUrl}/complete` , option ).then( async res=>{
      console.log(res.ok)
         if(!res.ok){
           await fetch(`${remoteUrl}/complete` , option )
