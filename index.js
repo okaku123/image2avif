@@ -198,7 +198,7 @@ async function  tellServerNoThingToHandle(){
       var avif = await wasm_avif()
       var avifBuffer = avif.encode(  resized , _w , _h , 3 , avifDefaultOptions , 1 )
       //  fs.writeFileSync(`${__dirname}/page/${name}.avif` , avifBuffer )
-       await postData( book , name, avifBuffer )
+      //  await postData( book , name, avifBuffer )
       console.log(name)
       free()
       avif.free()
